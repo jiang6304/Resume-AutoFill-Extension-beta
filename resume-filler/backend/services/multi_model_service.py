@@ -19,12 +19,12 @@ class MultiModelService:
         """初始化多模型服务"""
         # 文本模型配置
         self.text_api_key = os.getenv("LLM_API_KEY")
-        self.text_base_url = os.getenv("LLM_BASE_URL", "http://47.237.140.34:3000")
+        self.text_base_url = os.getenv("LLM_BASE_URL")
         self.text_model = os.getenv("LLM_MODEL", "GLM-5")
 
         # 视觉模型配置
         self.vision_api_key = os.getenv("VISION_API_KEY")
-        self.vision_base_url = os.getenv("VISION_BASE_URL", "http://47.237.140.34:3000")
+        self.vision_base_url = os.getenv("VISION_BASE_URL")
         self.vision_model = os.getenv("VISION_MODEL", "Kimi-K2.5")
 
         # 限流配置
@@ -47,11 +47,15 @@ class MultiModelService:
 
         if not self.text_api_key:
             errors.append("LLM_API_KEY 未设置")
+        if not self.text_base_url:
+            errors.append("LLM_BASE_URL 未设置")
         if not self.vision_api_key:
             errors.append("VISION_API_KEY 未设置")
+        if not self.vision_base_url:
+            errors.append("VISION_BASE_URL 未设置")
 
         if errors:
-            print(f"[WARN] 配置警告: {', '.join(errors)}")
+            print(f"[WARN] 配置警告: {', '.join(errors)}，请在 backend/.env 文件中配置")
 
     def _wait_for_rate_limit(self):
         """等待限流"""

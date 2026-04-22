@@ -21,7 +21,7 @@ class LLMService:
     def __init__(self):
         """初始化LLM客户端"""
         self.api_key = os.getenv("LLM_API_KEY")
-        self.base_url = os.getenv("LLM_BASE_URL", "http://47.237.140.34:3000")
+        self.base_url = os.getenv("LLM_BASE_URL")
         self.model = os.getenv("LLM_MODEL", "GLM-5")
 
 
@@ -34,7 +34,9 @@ class LLMService:
         self.retry_delay = 5.0  # 重试延迟（秒）
 
         if not self.api_key:
-            raise ValueError("LLM_API_KEY 环境变量未设置")
+            raise ValueError("LLM_API_KEY 环境变量未设置，请在 backend/.env 文件中配置")
+        if not self.base_url:
+            raise ValueError("LLM_BASE_URL 环境变量未设置，请在 backend/.env 文件中配置")
 
     def _wait_for_rate_limit(self):
         """等待限流"""
