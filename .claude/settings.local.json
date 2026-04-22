@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip --version)",
+      "Bash(npm --version)",
+      "Bash(python -m venv venv)",
+      "Read(//c/Users/mi/OneDrive/桌面/form-auto-filler/**)",
+      "Bash(curl -X POST \"http://127.0.0.1:8001/api/resume/upload\" -F \"file=@C:\\\\Users\\\\mi\\\\OneDrive\\\\桌面\\\\form-auto-filler\\\\info.txt\")",
+      "Bash(findstr :8001)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\mi\\OneDrive\\桌面\\网页\\自动填写简历\\resume-filler"
+    ]
+  }
+}

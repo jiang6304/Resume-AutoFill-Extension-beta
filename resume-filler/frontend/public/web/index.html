@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>简历管理 - 简历自动填写助手</title>
+  <style>
+    :root {
+      --primary-color: #1890ff;
+      --primary-hover: #40a9ff;
+      --primary-active: #096dd9;
+      --success-color: #52c41a;
+      --warning-color: #faad14;
+      --danger-color: #ff4d4f;
+      --text-primary: #262626;
+      --text-secondary: #595959;
+      --text-tertiary: #8c8c8c;
+      --text-quaternary: #bfbfbf;
+      --border-color: #e8e8e8;
+      --border-light: #f0f0f0;
+      --bg-base: #f5f7fa;
+      --bg-card: #ffffff;
+      --bg-hover: #e6f7ff;
+      --bg-active: #bae7ff;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+      --shadow-md: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+      background: var(--bg-base);
+      display: flex;
+      flex-direction: column;
+      color: var(--text-primary);
+      line-height: 1.5715;
+    }
+
+    /* 顶部导航栏 */
+    .top-nav {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-active) 100%);
+      color: #fff;
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-md);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+    }
+    .top-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .top-nav-logo {
+      width: 32px;
+      height: 32px;
+      background: rgba(255,255,255,0.2);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .top-nav h1 {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+    }
+    .top-nav-buttons {
+      display: flex;
+      gap: 8px;
+      background: rgba(255,255,255,0.1);
+      padding: 4px;
+      border-radius: var(--radius-md);
+    }
+    .top-nav-btn {
+      padding: 8px 20px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-sm);
+      color: rgba(255,255,255,0.85);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+    .top-nav-btn:hover {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+    .top-nav-btn.active {
+      background: #fff;
+      color: var(--primary-color);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* 主体布局 */
+    .main-wrapper {
+      display: flex;
+      flex: 1;
+      margin-top: 60px;
+      margin-bottom: 68px;
+      height: calc(100vh - 60px - 68px);
+      overflow: hidden;
+    }
+
+    /* 左侧垂直导航 */
+    .sidebar {
+      width: 152px;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border-light);
+      overflow-y: auto;
+      flex-shrink: 0;
+      height: 100%;
+      scrollbar-width: none;
+    }
+    .sidebar::-webkit-scrollbar {
+      display: none;
+    }
+    .sidebar-menu {
+      list-style: none;
+      padding: 8px;
+    }
+    .sidebar-item {
+      padding: 11px 12px;
+      margin-bottom: 2px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 13px;
+      transition: var(--transition);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sidebar-item:hover {
+      background: var(--bg-hover);
+      color: var(--primary-color);
+    }
+    .sidebar-item.active {
+      background: var(--bg-hover);
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    /* 中间内容区域 */
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 20px 24px;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+    }
+    .content-area::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* 右侧历史版本导航 */
+    .sidebar-right {
+      width: 152px;
+      background: var(--bg-card);
+      border-left: 1px solid var(--border-light);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .sidebar-right-title {
+      padding: 14px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: var(--bg-base);
+      flex-shrink: 0;
+      text-align: center;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .version-list-wrapper {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+    }
+    .version-list-wrapper::-webkit-scrollbar {
+      display: none;
+    }
+    .version-list {
+      list-style: none;
+      padding: 8px;
+    }
+    .version-list-item {
+      padding: 10px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 12px;
+      transition: var(--transition);
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+    }
+    .version-list-item:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-color);
+    }
+    .version-list-item.active {
+      background: var(--bg-hover);
+      border-color: var(--primary-color);
+    }
+    .version-list-item .version-name {
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .version-list-item.active .version-name {
+      color: var(--primary-color);
+    }
+    .version-list-item .version-meta {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .version-current-label {
+      font-size: 10px;
+      color: var(--success-color);
+      background: #f6ffed;
+      padding: 1px 6px;
+      border-radius: 10px;
+      border: 1px solid #b7eb8f;
+      white-space: nowrap;
+    }
+    .version-load-btn {
+      font-size: 11px;
+      color: var(--primary-color);
+      background: transparent;
+      border: 1px solid var(--primary-color);
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .version-load-btn:hover {
+      background: var(--primary-color);
+      color: #fff;
+    }
+    .version-list-empty {
+      padding: 24px 12px;
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 12px;
+    }
+
+    /* 面板样式 */
+    .panel {
+      background: var(--bg-card);
+      padding: 24px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      max-width: 900px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border-light);
+    }
+    .panel.hidden {
+      display: block;
+    }
+
+    /* 分类标题样式 */
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title::before {
+      content: '';
+      width: 3px;
+      height: 14px;
+      background: var(--primary-color);
+      border-radius: 2px;
+    }
+
+    /* 表单样式 */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      transition: var(--transition);
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: var(--text-quaternary);
+    }
+    .form-group input:hover,
+    .form-group select:hover,
+    .form-group textarea:hover {
+      border-color: var(--primary-hover);
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    /* 按钮样式 */
+    .btn {
+      padding: 9px 18px;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      line-height: 1.5;
+    }
+    .btn-primary {
+      background: var(--primary-color);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 2px 8px rgba(24, 144, 255, 0.35);
+    }
+    .btn-primary:active {
+      background: var(--primary-active);
+    }
+    .btn-success {
+      background: var(--success-color);
+      color: #fff;
+    }
+    .btn-success:hover {
+      background: #73d13d;
+      box-shadow: 0 2px 8px rgba(82, 196, 26, 0.35);
+    }
+    .btn-danger {
+      background: var(--danger-color);
+      color: #fff;
+    }
+    .btn-danger:hover {
+      background: #ff7875;
+    }
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+    .btn-secondary:hover {
+      background: var(--bg-hover);
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    .btn-sm {
+      padding: 5px 12px;
+      font-size: 12px;
+    }
+
+    /* 副标题 */
+    .section-subtitle {
+      font-size: 13px;
+      font-weight: 500;
+      margin: 20px 0 12px 0;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    /* 经历条目 */
+    .experience-item {
+      background: #fafbfc;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      border: 1px solid var(--border-light);
+      transition: var(--transition);
+    }
+    .experience-item:hover {
+      border-color: var(--border-color);
+      box-shadow: var(--shadow-sm);
+    }
+    .experience-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .experience-item .remove-btn {
+      background: transparent;
+      color: var(--text-quaternary);
+      border: none;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: var(--transition);
+      border-radius: var(--radius-sm);
+    }
+    .experience-item .remove-btn:hover {
+      background: #fff1f0;
+      color: var(--danger-color);
+    }
+
+    /* 添加按钮 */
+    .add-btn {
+      background: var(--bg-card);
+      border: 1px dashed var(--border-color);
+      padding: 12px;
+      width: 100%;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-tertiary);
+      transition: var(--transition);
+      font-weight: 500;
+    }
+    .add-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    /* 版本列表样式（历史管理页面） */
+    .version-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      border: 1px solid var(--border-light);
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    .version-item:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-color);
+    }
+    .version-item.is-current {
+      border: 2px solid var(--success-color);
+      background: #f6ffed;
+    }
+    .version-item.selected {
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+      border-color: var(--primary-color);
+    }
+    .version-info {
+      flex: 1;
+    }
+    .version-name {
+      font-weight: 500;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+    .version-time {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+    .version-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .current-label {
+      color: var(--success-color);
+      font-weight: 500;
+      margin-left: 8px;
+    }
+
+    /* 底部操作栏 */
+    .bottom-actions {
+      position: fixed;
+      bottom: 0;
+      left: 152px;
+      right: 152px;
+      padding: 14px 24px;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border-light);
+      display: flex;
+      justify-content: flex-start;
+      gap: 12px;
+      z-index: 90;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    /* 空状态提示 */
+    .empty-tip {
+      color: var(--text-tertiary);
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <nav class="top-nav">
+    <div class="top-nav-left">
+      <div class="top-nav-logo">📝</div>
+      <h1>简历管理</h1>
+    </div>
+    <div class="top-nav-buttons">
+      <button class="top-nav-btn active" data-view="edit">修改简历</button>
+      <button class="top-nav-btn" data-view="history">历史简历管理</button>
+    </div>
+  </nav>
+
+  <div class="main-wrapper">
+    <!-- 左侧垂直导航 -->
+    <aside class="sidebar" id="sidebar">
+      <ul class="sidebar-menu">
+        <li class="sidebar-item active" data-section="basic-panel">基本信息</li>
+        <li class="sidebar-item" data-section="education-panel">教育经历</li>
+        <li class="sidebar-item" data-section="work-panel">工作经历</li>
+        <li class="sidebar-item" data-section="internship-panel">实习经历</li>
+        <li class="sidebar-item" data-section="project-panel">项目经历</li>
+        <li class="sidebar-item" data-section="school-panel">在校经历</li>
+        <li class="sidebar-item" data-section="award-panel">获奖情况</li>
+        <li class="sidebar-item" data-section="language-panel">外语能力</li>
+        <li class="sidebar-item" data-section="certificate-panel">资格证书</li>
+        <li class="sidebar-item" data-section="family-panel">家庭情况</li>
+        <li class="sidebar-item" data-section="other-panel">其他信息</li>
+        <li class="sidebar-item" data-section="extra-panel">额外字段</li>
+      </ul>
+    </aside>
+
+    <!-- 右侧内容区域 -->
+    <main class="content-area">
+      <!-- 基本信息 -->
+      <div class="panel" id="basic-panel">
+        <h3 class="section-title">基本信息</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">姓名</label>
+            <input type="text" id="name" name="name" placeholder="请输入姓名">
+          </div>
+          <div class="form-group">
+            <label for="gender">性别</label>
+            <select id="gender" name="gender">
+              <option value="">请选择</option>
+              <option value="男">男</option>
+              <option value="女">女</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="birth_date">出生日期</label>
+            <input type="date" id="birth_date" name="birth_date">
+          </div>
+          <div class="form-group">
+            <label for="id_number">身份证号</label>
+            <input type="text" id="id_number" name="id_number" placeholder="请输入身份证号">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="political_status">政治面貌</label>
+            <select id="political_status" name="political_status">
+              <option value="">请选择</option>
+              <option value="群众">群众</option>
+              <option value="共青团员">共青团员</option>
+              <option value="中共党员">中共党员</option>
+              <option value="民主党派">民主党派</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="marital_status">婚姻状况</label>
+            <select id="marital_status" name="marital_status">
+              <option value="">请选择</option>
+              <option value="未婚">未婚</option>
+              <option value="已婚">已婚</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ethnicity">民族</label>
+            <input type="text" id="ethnicity" name="ethnicity" placeholder="请输入民族">
+          </div>
+          <div class="form-group">
+            <label for="native_place">籍贯</label>
+            <input type="text" id="native_place" name="native_place" placeholder="请输入籍贯">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone">手机号</label>
+            <input type="tel" id="phone" name="phone" placeholder="请输入手机号">
+          </div>
+          <div class="form-group">
+            <label for="email">邮箱</label>
+            <input type="email" id="email" name="email" placeholder="请输入邮箱">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="current_address">现居地址</label>
+          <input type="text" id="current_address" name="current_address" placeholder="请输入现居地址">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="education">学历</label>
+            <select id="education" name="education">
+              <option value="">请选择</option>
+              <option value="高中">高中</option>
+              <option value="大专">大专</option>
+              <option value="本科">本科</option>
+              <option value="硕士">硕士</option>
+              <option value="博士">博士</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="work_years">工作年限</label>
+            <input type="number" id="work_years" name="work_years" placeholder="请输入工作年限" min="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="job_intention">求职意向</label>
+          <input type="text" id="job_intention" name="job_intention" placeholder="请输入求职意向">
+        </div>
+        <h4 class="section-subtitle">联系方式扩展</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="wechat">微信号</label>
+            <input type="text" id="wechat" name="wechat" placeholder="请输入微信号">
+          </div>
+          <div class="form-group">
+            <label for="qq">QQ</label>
+            <input type="text" id="qq" name="qq" placeholder="请输入QQ号">
+          </div>
+        </div>
+        <h4 class="section-subtitle">个人信息扩展</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="household_registration">户籍</label>
+            <input type="text" id="household_registration" name="household_registration" placeholder="请输入户籍">
+          </div>
+          <div class="form-group">
+            <label for="student_source">生源地</label>
+            <input type="text" id="student_source" name="student_source" placeholder="请输入生源地">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="height">身高(cm)</label>
+            <input type="number" id="height" name="height" placeholder="请输入身高" min="0">
+          </div>
+          <div class="form-group">
+            <label for="weight">体重(kg)</label>
+            <input type="number" id="weight" name="weight" placeholder="请输入体重" min="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="health_status">健康状况</label>
+            <input type="text" id="health_status" name="health_status" placeholder="请输入健康状况">
+          </div>
+          <div class="form-group">
+            <label for="specialty">特长</label>
+            <input type="text" id="specialty" name="specialty" placeholder="请输入特长">
+          </div>
+        </div>
+        <h4 class="section-subtitle">紧急联系人</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="emergency_contact_name">紧急联系人姓名</label>
+            <input type="text" id="emergency_contact_name" name="emergency_contact_name" placeholder="请输入紧急联系人姓名">
+          </div>
+          <div class="form-group">
+            <label for="emergency_contact_phone">紧急联系人电话</label>
+            <input type="tel" id="emergency_contact_phone" name="emergency_contact_phone" placeholder="请输入紧急联系人电话">
+          </div>
+        </div>
+        <h4 class="section-subtitle">其他基本信息</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="country">国家/地区</label>
+            <input type="text" id="country" name="country" placeholder="请输入国家/地区">
+          </div>
+          <div class="form-group">
+            <label for="mailing_address">通信地址</label>
+            <input type="text" id="mailing_address" name="mailing_address" placeholder="请输入通信地址">
+          </div>
+        </div>
+      </div>
+
+      <!-- 教育经历 -->
+      <div class="panel hidden" id="education-panel">
+        <h3 class="section-title">教育经历</h3>
+        <div id="education-list"></div>
+        <button class="add-btn" id="add-education-btn">+ 添加教育经历</button>
+      </div>
+
+      <!-- 工作经历 -->
+      <div class="panel hidden" id="work-panel">
+        <h3 class="section-title">工作经历</h3>
+        <div id="work-list"></div>
+        <button class="add-btn" id="add-work-btn">+ 添加工作经历</button>
+      </div>
+
+      <!-- 实习经历 -->
+      <div class="panel hidden" id="internship-panel">
+        <h3 class="section-title">实习经历</h3>
+        <div id="internship-list"></div>
+        <button class="add-btn" id="add-internship-btn">+ 添加实习经历</button>
+      </div>
+
+      <!-- 项目经历 -->
+      <div class="panel hidden" id="project-panel">
+        <h3 class="section-title">项目经历</h3>
+        <div id="project-list"></div>
+        <button class="add-btn" id="add-project-btn">+ 添加项目经历</button>
+      </div>
+
+      <!-- 在校经历 -->
+      <div class="panel hidden" id="school-panel">
+        <h3 class="section-title">在校经历</h3>
+        <div id="school-activity-list"></div>
+        <button class="add-btn" id="add-school-activity-btn">+ 添加在校经历</button>
+      </div>
+
+      <!-- 获奖情况 -->
+      <div class="panel hidden" id="award-panel">
+        <h3 class="section-title">获奖情况</h3>
+        <div id="award-list"></div>
+        <button class="add-btn" id="add-award-btn">+ 添加获奖情况</button>
+      </div>
+
+      <!-- 外语能力 -->
+      <div class="panel hidden" id="language-panel">
+        <h3 class="section-title">外语能力</h3>
+        <div id="language-list"></div>
+        <button class="add-btn" id="add-language-btn">+ 添加外语能力</button>
+      </div>
+
+      <!-- 资格证书 -->
+      <div class="panel hidden" id="certificate-panel">
+        <h3 class="section-title">资格证书</h3>
+        <div id="certificate-list"></div>
+        <button class="add-btn" id="add-certificate-btn">+ 添加资格证书</button>
+      </div>
+
+      <!-- 家庭情况 -->
+      <div class="panel hidden" id="family-panel">
+        <h3 class="section-title">家庭情况</h3>
+        <div id="family-list"></div>
+        <button class="add-btn" id="add-family-btn">+ 添加家庭成员</button>
+      </div>
+
+      <!-- 其他信息 -->
+      <div class="panel hidden" id="other-panel">
+        <h3 class="section-title">其他信息</h3>
+        <div class="form-group">
+          <label for="skills">专业技能</label>
+          <textarea id="skills" name="skills" rows="4" placeholder="请输入专业技能"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="hobbies">兴趣爱好</label>
+          <textarea id="hobbies" name="hobbies" rows="3" placeholder="请输入兴趣爱好"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="certificates">证书（文本）</label>
+          <textarea id="certificates" name="certificates" rows="4" placeholder="请输入证书信息"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="awards">奖项（文本）</label>
+          <textarea id="awards" name="awards" rows="4" placeholder="请输入奖项信息"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="self_intro">自我介绍</label>
+          <textarea id="self_intro" name="self_intro" rows="6" placeholder="请输入自我介绍"></textarea>
+        </div>
+      </div>
+
+      <!-- 额外字段（自动识别） -->
+      <div class="panel" id="extra-panel">
+        <h3 class="section-title">额外字段 <span style="font-size:12px;color:#888;font-weight:normal;">（由AI自动识别或手动补充）</span></h3>
+        <div id="extra-fields-container">
+          <p class="empty-tip">上传简历后，AI会自动识别额外字段并显示在这里</p>
+        </div>
+      </div>
+
+      <!-- 历史简历面板 -->
+      <div class="panel" id="history-panel" style="display: none;">
+        <h3 class="section-title">历史版本</h3>
+        <div id="version-list">
+          <p class="empty-tip">加载中...</p>
+        </div>
+      </div>
+
+      <!-- 补充信息区域（需求22） -->
+      <div class="supplement-section" id="supplement-section" style="display: none;">
+        <div class="supplement-header">
+          <span class="supplement-title">📝 补充信息</span>
+          <button class="btn btn-link btn-sm" id="toggle-supplement-btn">收起</button>
+        </div>
+        <div class="supplement-body" id="supplement-body">
+          <textarea id="supplement-textarea" placeholder="在此输入需要补充的信息...&#10;例如：工作经历、项目经验、是否需要签证协助等"></textarea>
+          <div class="supplement-actions">
+            <button class="btn btn-secondary btn-sm" id="upload-supplement-btn">📎 上传补充文件</button>
+            <input type="file" id="supplement-file-input" accept=".docx,.txt,.xlsx,.pdf" style="display: none;">
+            <button class="btn btn-primary btn-sm" id="submit-supplement-btn">✓ 提交补充</button>
+          </div>
+          <p class="supplement-tip">💡 提示：提交后信息将自动解析并填充到表单中，请确认后点击保存按钮保存更改</p>
+        </div>
+      </div>
+
+      <!-- 底部按钮 -->
+      <div class="bottom-actions" id="bottom-actions">
+        <button class="btn btn-primary" id="save-resume-btn">💾 保存简历</button>
+        <button class="btn btn-success" id="save-version-btn">📄 保存为新版本</button>
+        <button class="btn btn-secondary" id="show-supplement-btn">📝 补充信息</button>
+      </div>
+    </main>
+
+    <!-- 右侧历史版本导航 -->
+    <aside class="sidebar-right" id="sidebar-right">
+      <div class="sidebar-right-title">历史版本</div>
+      <div class="version-list-wrapper">
+        <ul class="version-list" id="right-version-list">
+          <li class="version-list-empty">加载中...</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html>
+
+  <script src="index.js"></script>
+</body>
+</html>

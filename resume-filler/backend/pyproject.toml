@@ -1,0 +1,54 @@
+[project]
+name = "resume-filler-backend"
+version = "1.0.0"
+description = "简历自动填写助手后端服务"
+requires-python = ">=3.10"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Resume Filler Team" }]
+keywords = ["resume", "auto-fill", "browser-extension", "fastapi"]
+
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "python-docx>=0.8.11",
+    "openpyxl>=3.1.0",
+    "openai>=1.0.0",
+    "python-multipart>=0.0.6",
+    "python-dotenv>=1.0.0",
+    "httpx>=0.25.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.1.0",
+    "pytest>=7.0.0",
+]
+
+[project.scripts]
+resume-filler = "server:main"
+
+# Ruff - Python Linter & Formatter
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["routers", "services", "models", "utils"]
+
+# Pytest 配置
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

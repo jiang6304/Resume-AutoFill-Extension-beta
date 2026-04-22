@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>简历自动填写助手</title>
+  <style>
+    /* ==================== CSS变量 ==================== */
+    :root {
+      /* 主色调 */
+      --color-primary: #8bbeee;
+      --color-primary-hover: #5197d4;
+      --color-primary-active: #3d7ab3;
+      --color-primary-light: rgba(139, 190, 238, 0.15);
+
+      /* 功能色 */
+      --color-success: #fadb2f;
+      --color-success-hover: #f5c800;
+      --color-warning: #d178f1;
+      --color-warning-hover: #b85cd9;
+      --color-danger: #f14072;
+      --color-danger-hover: #d92a5a;
+
+      /* 文字颜色 */
+      --color-text-primary: #262626;
+      --color-text-secondary: #595959;
+      --color-text-tertiary: #8c8c8c;
+      --color-text-disabled: #bfbfbf;
+
+      /* 背景色 */
+      --color-bg-base: #f5f7fa;
+      --color-bg-container: #ffffff;
+      --color-bg-muted: #f0f0f0;
+
+      /* 边框色 */
+      --color-border: #e8e8e8;
+      --color-border-secondary: #f0f0f0;
+
+      /* 间距 */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 12px;
+      --spacing-lg: 16px;
+      --spacing-xl: 20px;
+
+      /* 圆角 */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+
+      /* 阴影 */
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      width: 320px;
+      min-height: 400px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--color-bg-base);
+      line-height: 1.3;
+    }
+    .container {
+      padding: var(--spacing-md);
+    }
+    .header {
+      text-align: center;
+      padding: var(--spacing-lg) 0;
+      border-bottom: 2px solid var(--color-border);
+      margin-bottom: var(--spacing-md);
+    }
+    .header h1 {
+      font-size: 18px;
+      color: var(--color-text-primary);
+      font-weight: 600;
+    }
+    .section {
+      background: var(--color-bg-container);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+      box-shadow: var(--shadow-md);
+    }
+    .btn {
+      width: 100%;
+      padding: 8px 16px;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: var(--spacing-sm);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-xs);
+    }
+    .btn:last-child {
+      margin-bottom: 0;
+    }
+    .btn-primary {
+      background: var(--color-primary);
+      color: #fff;
+      box-shadow: 0 2px 4px rgba(139, 190, 238, 0.3);
+    }
+    .btn-primary:hover {
+      background: var(--color-primary-hover);
+      box-shadow: 0 4px 8px rgba(139, 190, 238, 0.4);
+    }
+    .btn-primary:active {
+      background: var(--color-primary-active);
+    }
+    .btn-secondary {
+      background: #ffffff;
+      color: var(--color-text-primary);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-secondary:hover {
+      background: #fafafa;
+      border-color: #d9d9d9;
+      color: var(--color-primary-hover);
+    }
+    .btn-success {
+      background: var(--color-success);
+      color: #333;
+      box-shadow: 0 2px 4px rgba(250, 219, 47, 0.3);
+    }
+    .btn-success:hover {
+      background: var(--color-success-hover);
+    }
+    .btn-warning {
+      background: var(--color-warning);
+      color: #fff;
+      box-shadow: 0 2px 4px rgba(209, 120, 241, 0.3);
+    }
+    .btn-warning:hover {
+      background: var(--color-warning-hover);
+    }
+    .btn-danger {
+      background: var(--color-danger);
+      color: #fff;
+    }
+    .btn-danger:hover {
+      background: var(--color-danger-hover);
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .btn-loading {
+      position: relative;
+      color: transparent !important;
+      pointer-events: none;
+    }
+    .btn-loading::after {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .status {
+      font-size: 12px;
+      text-align: center;
+      padding: var(--spacing-sm) 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-xs);
+      line-height: 1.3;
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+    .status--waiting .status-dot {
+      background: var(--color-text-tertiary);
+      animation: none;
+    }
+    .status--running .status-dot {
+      background: var(--color-primary);
+    }
+    .status--paused .status-dot {
+      background: var(--color-warning);
+      animation: none;
+    }
+    .status--success .status-dot {
+      background: var(--color-success);
+      animation: none;
+    }
+    .status--error .status-dot {
+      background: var(--color-danger);
+      animation: none;
+    }
+    .status--waiting { color: var(--color-text-tertiary); }
+    .status--running { color: var(--color-primary-hover); }
+    .status--paused { color: var(--color-warning); }
+    .status--success { color: #c9a800; }
+    .status--error { color: var(--color-danger); }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+    .progress {
+      font-size: 12px;
+      color: var(--color-primary-hover);
+      text-align: center;
+      line-height: 1.3;
+    }
+    .log-area {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 8px;
+      border-radius: 4px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 11px;
+      max-height: 150px;
+      overflow-y: auto;
+      display: none;
+    }
+    .log-area.show {
+      display: block;
+    }
+    .log-item {
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .log-time {
+      color: #6a9955;
+    }
+    .log-info {
+      color: #9cdcfe;
+    }
+    .log-success {
+      color: #4ec9b0;
+    }
+    .log-error {
+      color: #f14c4c;
+    }
+
+    /* 进度条样式 */
+    .upload-progress,
+    .parse-progress {
+      margin-top: var(--spacing-md);
+    }
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: var(--color-border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover));
+      border-radius: var(--radius-sm);
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+    .parse-progress .progress-bar {
+      background: linear-gradient(90deg, var(--color-success), var(--color-success-hover));
+    }
+    .progress-text {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      text-align: center;
+      margin-top: 6px;
+      line-height: 1.3;
+    }
+    @keyframes progressIndeterminate {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(200%); }
+    }
+    .progress-bar.indeterminate {
+      width: 50% !important;
+      animation: progressIndeterminate 1.5s infinite ease-in-out;
+    }
+
+    /* 版本列表样式 */
+    .version-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-bottom: 1px solid var(--color-border-secondary);
+      transition: background 0.2s;
+    }
+    .version-item:last-child {
+      border-bottom: none;
+    }
+    .version-item:hover {
+      background: var(--color-primary-light);
+    }
+    .version-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .version-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-text-primary);
+      margin-bottom: 4px;
+    }
+    .version-meta {
+      font-size: 11px;
+      color: var(--color-text-tertiary);
+      line-height: 1.4;
+    }
+    .version-actions {
+      display: flex;
+      gap: 6px;
+      margin-left: 8px;
+    }
+    .version-btn {
+      padding: 4px 8px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .version-btn-load {
+      background: var(--color-primary-light);
+      color: var(--color-primary-hover);
+    }
+    .version-btn-load:hover {
+      background: var(--color-primary);
+      color: #fff;
+    }
+    .version-btn-use {
+      background: rgba(250, 219, 47, 0.15);
+      color: #b8a000;
+    }
+    .version-btn-use:hover {
+      background: var(--color-success);
+      color: #333;
+    }
+    .no-versions {
+      text-align: center;
+      padding: var(--spacing-xl) var(--spacing-lg);
+      color: var(--color-text-tertiary);
+    }
+    .no-versions-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto var(--spacing-md);
+      opacity: 0.5;
+    }
+    .no-versions-text {
+      font-size: 13px;
+      margin-bottom: var(--spacing-xs);
+    }
+    .no-versions-hint {
+      font-size: 12px;
+    }
+
+    /* 弹窗样式 - 使用 fixed 确保覆盖整个视口 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-content {
+      background: var(--color-bg-container);
+      border-radius: var(--radius-lg);
+      width: 280px;
+      max-width: 90%;
+      max-height: 80%;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.9) translateY(-10px);
+      transition: transform 0.2s ease;
+    }
+    .modal-overlay.show .modal-content {
+      transform: scale(1) translateY(0);
+    }
+    .modal-content-center {
+      padding: var(--spacing-xl);
+      text-align: center;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-bottom: 1px solid var(--color-border);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .modal-close-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--color-text-tertiary);
+      border-radius: var(--radius-sm);
+      transition: all 0.2s;
+    }
+    .modal-close-btn:hover {
+      background: var(--color-bg-muted);
+      color: var(--color-text-primary);
+    }
+    .modal-body {
+      padding: var(--spacing-sm);
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .modal-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-text-primary);
+    }
+    .modal-desc {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.5;
+    }
+    .modal-actions {
+      display: flex;
+      gap: var(--spacing-md);
+      justify-content: center;
+    }
+    .btn-cancel {
+      padding: 8px 16px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: var(--color-bg-container);
+      cursor: pointer;
+      color: var(--color-text-secondary);
+      transition: all 0.2s;
+    }
+    .btn-cancel:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+    .btn-confirm {
+      padding: 8px 16px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: var(--color-primary);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-confirm:hover {
+      background: var(--color-primary-hover);
+    }
+    .btn-confirm.btn-danger {
+      background: var(--color-danger);
+    }
+    .btn-confirm.btn-danger:hover {
+      background: var(--color-danger-hover);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>简历自动填写助手</h1>
+    </div>
+
+    <div class="section">
+      <button class="btn btn-primary" id="uploadBtn">上传简历</button>
+      <button class="btn btn-secondary" id="editBtn">编辑信息</button>
+      <button class="btn btn-secondary" id="versionBtn">选择历史版本</button>
+
+      <!-- 上传进度条 -->
+      <div class="upload-progress" id="uploadProgress" style="display: none;">
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="uploadProgressBar"></div>
+        </div>
+        <div class="progress-text" id="uploadProgressText">上传中... 0%</div>
+      </div>
+
+      <!-- 解析进度条 -->
+      <div class="parse-progress" id="parseProgress" style="display: none;">
+        <div class="progress-bar-container">
+          <div class="progress-bar indeterminate" id="parseProgressBar"></div>
+        </div>
+        <div class="progress-text" id="parseProgressText">解析中...</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <button class="btn btn-success" id="startBtn">开始填写</button>
+      <button class="btn btn-warning" id="pauseBtn" style="display:none;">暂停</button>
+      <button class="btn btn-primary" id="continueBtn" style="display:none;">继续</button>
+    </div>
+
+    <div class="progress" id="progress">已填 0 / 总数 0</div>
+
+    <div class="section">
+      <button class="btn btn-secondary" id="logToggle">显示日志</button>
+      <div class="log-area" id="logArea"></div>
+    </div>
+
+    <div class="status status--waiting" id="status">
+      <span class="status-dot"></span>
+      <span class="status-text">等待上传简历...</span>
+    </div>
+  </div>
+
+  <!-- 历史版本弹窗 -->
+  <div id="versionModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>选择历史版本</span>
+        <button id="close-modal-btn" class="modal-close-btn">&times;</button>
+      </div>
+      <div id="versionList" class="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 版本超限弹窗 -->
+  <div id="versionLimitModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content modal-content-center">
+      <div class="modal-title">版本数量已达上限</div>
+      <div class="modal-desc">最多保存5个简历版本，请先删除旧版本再上传新简历。</div>
+      <div class="modal-actions">
+        <button id="cancelLimitBtn" class="btn-cancel">取消</button>
+        <button id="goDeleteBtn" class="btn-confirm">去删除</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html>
