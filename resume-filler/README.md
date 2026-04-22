@@ -47,12 +47,14 @@ resume-filler/
 ├── backend/                  # Python 后端服务
 │   ├── server.py            # 主服务入口 (端口 8001)
 │   ├── requirements.txt     # Python 依赖
-│   ├── .env.example         # 环境变量模板
+│   ├── .env.example         # 环境变量模板（复制为 .env 使用）
 │   ├── routers/             # API 路由层
 │   │   └── resume.py        # 简历相关 API
 │   ├── services/            # 业务逻辑层
-│   │   ├── parser.py        # 文件解析（DOCX/TXT/XLSX）
-│   │   └── llm.py           # LLM 调用服务
+│   │   ├── parser.py        # 文件解析（DOCX/TXT/XLSX/PDF）
+│   │   ├── llm.py           # LLM 调用服务
+│   │   ├── multi_model_service.py  # 多模型服务
+│   │   └── vision_service.py       # 视觉模型服务
 │   ├── models/              # 数据模型层
 │   │   └── resume.py        # Pydantic 模型定义
 │   └── utils/               # 工具层
@@ -94,11 +96,53 @@ venv\Scripts\activate
 # 安装依赖
 pip install -r requirements.txt
 
-# 配置环境变量
+# 配置环境变量（重要！）
 copy .env.example .env
 # 编辑 .env 文件，填入您的 LLM API 配置
+```
 
-# 启动后端服务
+#### ⚠️ 必需的环境变量配置
+
+在 `backend/.env` 文件中配置以下环境变量：
+
+```env
+# 文本模型配置（必需）
+LLM_API_KEY=your_llm_api_key_here
+LLM_BASE_URL=https://your-llm-api-url.com/v1
+LLM_MODEL=GLM-5
+
+# 视觉模型配置（可选，用于图片识别）
+VISION_API_KEY=your_vision_api_key_here
+VISION_BASE_URL=https://your-vision-api-url.com/v1
+VISION_MODEL=Kimi-K2.5
+```
+
+#### 示例配置
+
+**豆包 API：**
+```env
+LLM_API_KEY=your_doubao_api_key
+LLM_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
+LLM_MODEL=doubao-pro-32k
+```
+
+**GLM API：**
+```env
+LLM_API_KEY=your_glm_api_key
+LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+LLM_MODEL=glm-4
+```
+
+**Kimi API（视觉模型）：**
+```env
+VISION_API_KEY=your_kimi_api_key
+VISION_BASE_URL=https://api.moonshot.cn/v1
+VISION_MODEL=moonshot-v1-8k
+```
+
+#### 启动后端服务
+
+```bash
 python server.py
 ```
 
@@ -130,21 +174,14 @@ npm run build
 
 ---
 
-## 环境变量配置
+## 需要配置的文件清单
 
-在 `backend/.env` 文件中配置以下环境变量：
-
-```env
-LLM_API_KEY=your_api_key_here
-LLM_BASE_URL=your_base_url_here
-LLM_MODEL=GLM-5
-```
-
-例如使用豆包 API：
-```env
-LLM_API_KEY=your_doubao_api_key
-LLM_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
-```
+| 文件 | 说明 | 是否必需 |
+|------|------|----------|
+| `backend/.env` | 从 `.env.example` 复制并填入 API 配置 | ✅ 必需 |
+| `backend/services/llm.py` | 无需修改，从环境变量读取配置 | - |
+| `backend/services/multi_model_service.py` | 无需修改，从环境变量读取配置 | - |
+| `backend/services/vision_service.py` | 无需修改，从环境变量读取配置 | - |
 
 ---
 
@@ -320,7 +357,7 @@ LLM_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
 
 - **后端**: Python 3.10+, FastAPI, uvicorn, python-docx, openpyxl, httpx
 - **前端**: Vue 3, Vite, Chrome Extension Manifest V3
-- **AI**: 支持 OpenAI SDK 兼容的 LLM API（豆包、GLM 等）
+- **AI**: 支持 OpenAI SDK 兼容的 LLM API（豆包、GLM、Kimi 等）
 
 ## License
 
